@@ -6,3 +6,8 @@ see the effects in real time.
 A silly project to teach myself a bit of Python.
 
 Requires `pygame` and Python 3.x.
+
+Usage:
+```
+$ python3 perlintoy.py
+```
