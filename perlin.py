@@ -6,8 +6,6 @@ class Perlin:
     def __init__(self, octaves=1, persistence=0.5, salt=1):
         # PRNG salt. Should probably be either 1 or a prime; definitely not 0.
         self._salt = salt
-        if self._salt == 1:
-            self._xs32 = self._unsalted_xs32
 
         # How many octaves do we use?
         self._octaves = octaves
@@ -31,7 +29,6 @@ class Perlin:
            138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180,
            151]
 
-
     def noise(self, x):
         '''Returns a noise value between -0.5 and 0.5.'''
         y = 0
@@ -53,28 +50,17 @@ class Perlin:
         '''Attenuate value, for smoother curves.'''
         return t * t * t * (t * (t * 6 - 15) + 10)
 
-    def _xs32(self, x):
-        '''Simple, fast PRNG for 32 bit integer inputs.'''
-        return self._unsalted_xs32(x*self._salt)
-
-    def _unsalted_xs32(self, x):
-        '''Unsalted PRNG, for better performance if salt is 1.'''
-        x ^= x >> 13
-        x ^= x << 17
-        x ^= x >> 5
-        return x
-
     def _octave(self, x):
         '''Generate noise for a single octave.'''
         x0 = math.floor(x)
         x1 = x0 + 1
-        a = self._grad(self._perm[x0 & 255], x-x0)
-        b = self._grad(self._perm[x1 & 255], x-x1)
+        a = self._grad(self._perm[(x0*self._salt) & 255], x-x0)
+        b = self._grad(self._perm[(x1*self._salt) & 255], x-x1)
         return self._lerp(a, b, self._fade(x-x0))
 
-    def _grad(self, xi, x):
+    def _grad(self, hash, x):
         '''One-dimensional gradient vector at the given point.'''
-        if self._xs32(xi) & 1:
+        if hash & 1:
             return x
         else:
             return -x
